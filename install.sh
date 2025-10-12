@@ -1,19 +1,7 @@
 #!/bin/bash
-basic_installation(){
-	echo "======= Ubuntu configuration ======="
-	echo "======= Installing some basic stuff ======="
-	sudo apt update && sudo apt upgrade
-	sudo apt-add-repository -y universe
-	packages=(curl ca-certificates git software-properties-common zsh)
-	for pkg in "${packages[@]}"; do
-        	if ! dpkg -s "$pkg" &>/dev/null; then
-        		echo "Installing $pkg..."
-        		sudo apt install -y "$pkg"
-        	else
-       			echo "$pkg is already installed."
-        	fi
-	done
-}
+
+source ./ubuntu.sh
+source ./fedora.sh
 
 install_and_set_0xproto_nerdfont() {
   local font_name="0xProto Nerd Font Mono"
@@ -42,7 +30,7 @@ install_and_set_0xproto_nerdfont() {
 
       # Automatyczna zmiana czcionki w GNOME Terminal
       if command -v gsettings &> /dev/null && gsettings get org.gnome.Terminal.ProfilesList list &> /dev/null; then
-          echo "🎛️ Ustawianie czcionki w GNOME Terminal..."
+          echo "🎛 Ustawianie czcionki w GNOME Terminal..."
 
           # Pobierz domyślny profil terminala
           local profile_id
@@ -56,52 +44,20 @@ install_and_set_0xproto_nerdfont() {
 
           echo "✅ Czcionka została ustawiona w GNOME Terminal: $font_string"
       else
-          echo "⚠️ Nie wykryto GNOME Terminal lub brak dostępu do ustawień. Ustaw czcionkę ręcznie."
+          echo "⚠ Nie wykryto GNOME Terminal lub brak dostępu do ustawień. Ustaw czcionkę ręcznie."
       fi
   else
       echo "❌ Czcionka nie została poprawnie zainstalowana."
   fi
 }
 
-
-
-ros2_ubuntu_installation(){
-	if [ ! -d "/opt/ros" ]; then
-		echo "======= Installing ROS2 humble ======="
-		export ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | grep -F "tag_name" | awk -F\" '{print $4}')
-		curl -L -o /tmp/ros2-apt-source.deb "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.$(. /etc/os-release && echo $VERSION_CODENAME)_all.deb" # If using Ubuntu derivates use $UBUNTU_CODENAME
-		sudo dpkg -i /tmp/ros2-apt-source.deb
-		sudo apt update & sudo apt upgrade
-		sudo apt -y install ros-humble-desktop python3-colcon-common-extensions
-		# instalacja naszych, scorpiowych zależności
-		sudo apt -y install  geographiclib-tools libgeographic-dev  geographiclib-tools libgeographic-dev ros-humble-hardware-interface ros-humble-moveit ros-humble-moveit-servo libmagic-enum-dev ros-humble-pcl-ros  protobuf-compiler libprotobuf-dev
-		source /opt/ros/humble/setup.bash
-	fi
-}
-
-docker_ubuntu_installation(){
-	echo "======= Installing docker ======="
-	sudo install -m 0755 -d /etc/apt/keyrings
-	sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-	sudo chmod a+r /etc/apt/keyrings/docker.asc
-	echo \
-  	"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-	$(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
-	sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-	sudo apt-get update
-	sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-	sudo useradd -g $USER docker
-}
-
 zsh_config() {
 	echo "======= Zsh install ======"
-	if [ ! -d "$HOME/.oh-my-zsh" ]; then
 		sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 		chsh -s $(which zsh)
 		curl -sS https://starship.rs/install.sh | sh
 		echo 'eval "$(starship init zsh)"' >> ~/.zshrc
-		starship preset gruvbox-rainbow -o ~/.config/starship.toml
-	fi
+		starship preset catppuccin-powerline -o ~/.config/starship.toml
 }
 
 nvim_install() {
@@ -165,20 +121,17 @@ ssh_generation() {
 echo "======= Distro check... ======="
 if [ -f /etc/os-release ]; then
 	if grep -qi "ubuntu" /etc/os-release; then
-		echo "======= Finded Ubuntu ======="
-		basic_installation
-		install_and_set_0xproto_nerdfont
-		ros2_ubuntu_installation
-		docker_ubuntu_installation
-
-	else
-		echo "To nie ubuntu"
+		ubuntu_config
+	fi
+	if grep -qi "fedora" /etc/os-release; then
+		fedora_config
 	fi
 else
 	echo "Doesnt found distro file"
 	exit 1
 fi
 echo "======= Distro independent part ======="
+install_and_set_0xproto_nerdfont
 zsh_config
 nvim_install
 nvim_config
