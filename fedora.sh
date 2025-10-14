@@ -7,7 +7,12 @@ fedora_config(){
 
 fedora_basic_stuff(){
 	sudo dnf install https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm -y
-	sudo dnf install -y wl-clipboard steam curl git zsh flatpak ripgrep
+	sudo dnf copr enable -y scottames/ghostty
+	sudo dnf install -y wl-clipboard steam curl git zsh flatpak ripgrep ghostty
+}
+
+fedora_sway_stuff(){
+	sudo dnf install -y sway nm-applet brightnessctl
 }
 
 fedora_flatpak_install(){
