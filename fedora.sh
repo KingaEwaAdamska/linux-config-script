@@ -3,6 +3,7 @@
 fedora_config(){
 	fedora_basic_stuff
 	fedora_flatpak_install
+	fedora_dev_apps
 }
 
 fedora_basic_stuff(){
@@ -12,7 +13,15 @@ fedora_basic_stuff(){
 }
 
 fedora_sway_stuff(){
-	sudo dnf install -y sway nm-applet brightnessctl
+	sudo dnf install -y sway waybar nm-applet blueman-applet brightnessctl wofi swaylock brightnessctl 
+	cd ~/.config
+	git clone git@github.com:KingaEwaAdamska/sway-config.git sway
+	git clone git@github.com:KingaEwaAdamska/waybar-config.git waybar
+
+}
+
+fedora_dev_apps(){
+	sudo dnf install -y cmake
 }
 
 fedora_flatpak_install(){
@@ -20,4 +29,5 @@ fedora_flatpak_install(){
 		flatpak install flathub com.heroicgameslauncher.hgl
 		flatpak install flathub org.signal.Signal
 		flatpak install flathub io.github.spacingbat3.webcord
+		flatpak install flathub net.cozic.joplin_desktop
 }
