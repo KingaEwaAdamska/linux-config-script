@@ -13,11 +13,7 @@ fedora_basic_stuff(){
 }
 
 fedora_sway_stuff(){
-	sudo dnf install -y sway waybar nm-applet blueman-applet brightnessctl wofi swaylock brightnessctl 
-	cd ~/.config
-	git clone git@github.com:KingaEwaAdamska/sway-config.git sway
-	git clone git@github.com:KingaEwaAdamska/waybar-config.git waybar
-
+	sudo dnf install -y sway waybar nm-applet blueman-applet brightnessctl wofi swaylock grim slurp wl-clipboard
 }
 
 fedora_dev_apps(){
